@@ -4,6 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>อร่อยดี (Aroy-Dee) | Restaurant Order & POS Portal</title>
+  <!-- Global Error Logger for Debugging -->
+  <script>
+    window.addEventListener('error', function(e) {
+      var div = document.getElementById('debug-error-banner');
+      if (!div) {
+        div = document.createElement('div');
+        div.id = 'debug-error-banner';
+        div.style.cssText = 'position:fixed;top:0;left:0;width:100%;background-color:#ef4444;color:white;padding:20px;z-index:99999;font-family:monospace;font-size:14px;white-space:pre-wrap;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+        document.body.appendChild(div);
+      }
+      var target = e.target;
+      if (target && (target.tagName === 'SCRIPT' || target.tagName === 'LINK')) {
+        div.innerHTML += '<strong>Failed to load asset:</strong> ' + (target.src || target.href) + '<br>';
+      } else {
+        div.innerHTML += '<strong>JavaScript Error:</strong> ' + e.message + '<br>at ' + e.filename + ':' + e.lineno + ':' + e.colno + '<br>';
+      }
+    }, true);
+  </script>
   <!-- SEO Meta Tags -->
   <meta name="description" content="ระบบจัดการร้านอาหารและสั่งซื้ออาหารออนไลน์สำหรับลูกค้าและพนักงานหลังร้าน ครบวงจร ใช้งานง่าย รวดเร็ว">
   <!-- CSS Link -->
@@ -55,6 +73,40 @@
 
   <!-- Printing section for thermal receipts -->
   <div id="print-section"></div>
+
+  <!-- Image Diagnostics Panel -->
+  <div id="image-diagnostics" style="background:#1e293b; color:#f8fafc; padding:15px; margin:20px; border-radius:8px; font-family:monospace; border:1px solid #334155; font-size: 13px;">
+    <h3 style="margin-bottom:8px;">🔍 Image File Diagnostics (Live Test)</h3>
+    <ul id="diag-list" style="margin-left:20px; list-style-type:square; line-height: 1.6;"></ul>
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      var images = [
+        "./assets/images/pad_thai.jpg",
+        "./assets/images/tom_yum.jpg",
+        "./assets/images/green_curry.jpg",
+        "./assets/images/mango_sticky_rice.jpg",
+        "./assets/images/thai_tea.jpg",
+        "./assets/images/water.jpg"
+      ];
+      var list = document.getElementById("diag-list");
+      images.forEach(function(url) {
+        fetch(url)
+          .then(function(res) {
+            var li = document.createElement("li");
+            li.style.color = res.ok ? "#10b981" : "#ef4444";
+            li.innerHTML = "<strong>" + url + "</strong>: " + (res.ok ? "✅ Loaded (" + res.status + " " + res.statusText + ")" : "❌ Failed (" + res.status + " " + res.statusText + ")");
+            list.appendChild(li);
+          })
+          .catch(function(err) {
+            var li = document.createElement("li");
+            li.style.color = "#ef4444";
+            li.innerHTML = "<strong>" + url + "</strong>: ❌ Network Error (" + err.message + ")";
+            list.appendChild(li);
+          });
+      });
+    });
+  </script>
 
   <!-- JavaScript Entry Point -->
   <script type="module" src="./app.js?v=3"></script>
