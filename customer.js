@@ -93,7 +93,7 @@ export const CustomerView = {
               class="menu-card-img" 
               style="position: absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;"
               onload="this.style.opacity = 1"
-              onerror="this.style.display = 'none'; this.previousElementSibling.style.opacity = 1;"
+              onerror="window.dispatchEvent(new CustomEvent('image-load-error', {detail: this.src})); this.style.display = 'none'; this.previousElementSibling.style.opacity = 1;"
             >
             <span class="menu-card-badge ${badgeClass}">${item.category}</span>
           </div>

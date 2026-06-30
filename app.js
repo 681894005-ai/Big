@@ -161,6 +161,10 @@ window.addEventListener("auth-changed", () => {
   if (state.currentView === 'admin') {
     AdminView.render('main-content', state, actions);
   }
+// Listen to image load errors
+window.addEventListener("image-load-error", (e) => {
+  console.error("Image failed to load:", e.detail);
+  actions.showToast(`ไม่สามารถโหลดรูปภาพ: ${e.detail}`, 'danger');
 });
 
 // --- CORE LAYOUT HELPERS ---
