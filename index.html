@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>อร่อยดี (Aroy-Dee) | Restaurant Order & POS Portal</title>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="ระบบจัดการร้านอาหารและสั่งซื้ออาหารออนไลน์สำหรับลูกค้าและพนักงานหลังร้าน ครบวงจร ใช้งานง่าย รวดเร็ว">
+  <!-- CSS Link -->
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  
+  <div id="app">
+    <!-- Header -->
+    <header>
+      <a href="#" id="brand-logo" class="logo">
+        <div class="logo-icon">🍲</div>
+        Aroy<span>Dee</span>
+      </a>
+      
+      <nav class="nav-links">
+        <button id="nav-customer" class="nav-btn active" data-target="customer">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          ดูเมนูอาหาร
+        </button>
+        <button id="nav-admin" class="nav-btn" data-target="admin">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          ระบบจัดการ POS
+        </button>
+      </nav>
+
+      <div id="auth-status-container">
+        <!-- Auth status injected here dynamically -->
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main id="main-content">
+      <!-- Pages will be rendered here dynamically -->
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <p>&copy; 2026 Aroy-Dee Restaurant. All Rights Reserved. (Repository 681894005)</p>
+    </footer>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- Printing section for thermal receipts -->
+  <div id="print-section"></div>
+
+  <!-- JavaScript Entry Point -->
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

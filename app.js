@@ -1,0 +1,210 @@
+// app.js - Main Application Shell & Router Coordinator
+import { DB } from './db.js';
+import { CustomerView } from './customer.js';
+import { AdminView } from './admin.js';
+
+// --- GLOBAL APPLICATION STATE ---
+const state = {
+  currentView: 'customer', // 'customer' or 'admin'
+  cart: JSON.parse(localStorage.getItem('aroy_dee_cart')) || [],
+  currentCategory: 'all',
+  adminTab: 'orders'
+};
+
+// Save cart to local storage whenever it changes
+function saveCart() {
+  localStorage.setItem('aroy_dee_cart', JSON.stringify(state.cart));
+}
+
+// --- APP ACTIONS AND CONTROLLERS ---
+const actions = {
+  // Navigation Router
+  navigate(view) {
+    state.currentView = view;
+    
+    // Toggle header nav buttons visual state
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      if (btn.dataset.target === view) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    // Render corresponding view
+    if (view === 'customer') {
+      CustomerView.render('main-content', state, actions);
+    } else if (view === 'admin') {
+      AdminView.render('main-content', state, actions);
+    }
+  },
+
+  // Toast Notifications Stack
+  showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    // Icon mapping
+    let icon = 'ℹ️';
+    if (type === 'success') icon = '✅';
+    if (type === 'warning') icon = '⚠️';
+    if (type === 'danger') icon = '🚨';
+
+    toast.innerHTML = `
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <span>${icon}</span>
+        <span class="toast-message">${message}</span>
+      </div>
+      <button class="toast-close">&times;</button>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto close after 4s
+    const timer = setTimeout(() => {
+      toast.style.animation = 'toast-slide-in 0.3s ease reverse forwards';
+      toast.addEventListener('animationend', () => toast.remove());
+    }, 4000);
+
+    // Manual close
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+      clearTimeout(timer);
+      toast.remove();
+    });
+  },
+
+  // Cart Operations
+  addToCart(item) {
+    const existing = state.cart.find(i => i.id === item.id);
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      state.cart.push({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: 1
+      });
+    }
+    
+    saveCart();
+    this.showToast(`เพิ่ม ${item.name} ลงในตะกร้าแล้ว`, 'success');
+    
+    // Rerender customer views
+    CustomerView.renderCart(state.cart, actions);
+  },
+
+  updateCartQty(id, delta) {
+    const item = state.cart.find(i => i.id === id);
+    if (!item) return;
+
+    item.quantity += delta;
+    if (item.quantity <= 0) {
+      state.cart = state.cart.filter(i => i.id !== id);
+      this.showToast("ลบรายการอาหารออกจากตะกร้าเรียบร้อย", 'warning');
+    }
+
+    saveCart();
+    
+    // Rerender customer views
+    CustomerView.renderCart(state.cart, actions);
+  },
+
+  removeFromCart(id) {
+    const item = state.cart.find(i => i.id === id);
+    state.cart = state.cart.filter(i => i.id !== id);
+    saveCart();
+    
+    if (item) {
+      this.showToast(`ลบ ${item.name} ออกจากตะกร้าเรียบร้อย`, 'warning');
+    }
+
+    // Rerender customer views
+    CustomerView.renderCart(state.cart, actions);
+  },
+
+  clearCart() {
+    state.cart = [];
+    saveCart();
+    
+    // Rerender customer views
+    CustomerView.renderCart(state.cart, actions);
+  }
+};
+
+// --- REAL-TIME UPDATES VIA CUSTOM EVENTS ---
+
+// Listen to order changes (e.g. customer submits checkout -> admin screen updates instantly)
+window.addEventListener("db-orders-updated", () => {
+  if (state.currentView === 'admin' && state.adminTab === 'orders') {
+    const session = DB.getCurrentSession();
+    if (session) {
+      AdminView.renderOrdersBoard(actions);
+    }
+  }
+});
+
+// Listen to menu changes (e.g. manager updates price/availability -> customer screen updates instantly)
+window.addEventListener("db-menu-updated", () => {
+  if (state.currentView === 'customer') {
+    CustomerView.renderMenuGrid(state.currentCategory);
+  }
+});
+
+// Listen to employee session changes
+window.addEventListener("auth-changed", () => {
+  renderHeaderAuthStatus();
+  // Rerender admin dashboard or login form
+  if (state.currentView === 'admin') {
+    AdminView.render('main-content', state, actions);
+  }
+});
+
+// --- CORE LAYOUT HELPERS ---
+
+// Render auth status indicator in header
+function renderHeaderAuthStatus() {
+  const container = document.getElementById("auth-status-container");
+  if (!container) return;
+
+  const session = DB.getCurrentSession();
+  if (session) {
+    container.innerHTML = `
+      <div style="display:flex; align-items:center; gap:0.55rem;">
+        <span style="font-size:0.85rem; font-weight:600; color:var(--text-muted);">
+          POS: 🟢 ${session.name}
+        </span>
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <span style="font-size:0.8rem; color:var(--text-muted); display:flex; align-items:center; gap:0.25rem;">
+        🛡️ POS Locked
+      </span>
+    `;
+  }
+}
+
+// --- APP INITIALIZATION ---
+document.addEventListener("DOMContentLoaded", () => {
+  // Bind Header navigation buttons
+  document.getElementById("nav-customer").addEventListener("click", () => {
+    actions.navigate('customer');
+  });
+
+  document.getElementById("nav-admin").addEventListener("click", () => {
+    actions.navigate('admin');
+  });
+
+  document.getElementById("brand-logo").addEventListener("click", (e) => {
+    e.preventDefault();
+    actions.navigate('customer');
+  });
+
+  // Render initial view
+  actions.navigate('customer');
+  renderHeaderAuthStatus();
+});
