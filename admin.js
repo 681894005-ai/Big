@@ -1,5 +1,5 @@
 // admin.js - Employee Back-office & POS Dashboard
-import { DB } from './db.js?v=3';
+import { DB } from './db.js?v=4';
 
 export const AdminView = {
   render(containerId, globalState, actions) {

@@ -7,7 +7,7 @@ const DEFAULT_MENU_ITEMS = [
     name: "ผัดไทยกุ้งสด (Pad Thai with Fresh Shrimp)",
     price: 120,
     category: "Main",
-    image: "./assets/images/pad_thai.jpg?v=3",
+    image: "https://images.unsplash.com/photo-1626804475315-9644b37a2fe4?auto=format&fit=crop&w=600&q=80",
     description: "เส้นจันท์เหนียวนุ่ม ผัดกับซอสสูตรพิเศษของร้าน เสิร์ฟพร้อมกุ้งสดตัวโต เต้าหู้ ถั่วงอก และกุยช่าย",
     available: true
   },
@@ -16,7 +16,7 @@ const DEFAULT_MENU_ITEMS = [
     name: "ต้มยำกุ้งน้ำข้น (Tom Yum Goong - Thick Soup)",
     price: 180,
     category: "Main",
-    image: "./assets/images/tom_yum.jpg?v=3",
+    image: "https://images.unsplash.com/photo-1548943487-a2e4e43b4853?auto=format&fit=crop&w=600&q=80",
     description: "ต้มยำรสชาติเข้มข้น หอมเครื่องสมุนไพร ข่า ตะไคร้ ใบมะกรูด พร้อมกุ้งแม่น้ำเนื้อแน่นและเห็ดฟาง",
     available: true
   },
@@ -25,7 +25,7 @@ const DEFAULT_MENU_ITEMS = [
     name: "แกงเขียวหวานไก่ (Chicken Green Curry)",
     price: 140,
     category: "Main",
-    image: "./assets/images/green_curry.jpg?v=3",
+    image: "https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?auto=format&fit=crop&w=600&q=80",
     description: "แกงเขียวหวานรสชาติกลมกล่อม หอมกะทิสด ใส่เนื้ออกไก่นุ่ม มะเขือเปราะ และใบโหระพา",
     available: true
   },
@@ -34,7 +34,7 @@ const DEFAULT_MENU_ITEMS = [
     name: "ข้าวเหนียวมะม่วง (Mango Sticky Rice)",
     price: 90,
     category: "Dessert",
-    image: "./assets/images/mango_sticky_rice.jpg?v=3",
+    image: "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?auto=format&fit=crop&w=600&q=80",
     description: "มะม่วงน้ำดอกไม้หวานฉ่ำ เสิร์ฟพร้อมข้าวเหนียวมูนราดน้ำกะทิเข้มข้นโรยด้วยถั่วทองกรุบกรอบ",
     available: true
   },
@@ -43,7 +43,7 @@ const DEFAULT_MENU_ITEMS = [
     name: "ชาไทยเย็นสูตรโบราณ (Thai Iced Tea)",
     price: 60,
     category: "Drinks",
-    image: "./assets/images/thai_tea.jpg?v=3",
+    image: "https://images.unsplash.com/photo-1553909489-cd47e0907980?auto=format&fit=crop&w=600&q=80",
     description: "ชาไทยรสชาติเข้มข้น หวานมันกำลังดี ชงสดใหม่ทุกวัน ท็อปด้วยนมข้นจืดสไตล์ไทยแท้",
     available: true
   },
@@ -52,7 +52,7 @@ const DEFAULT_MENU_ITEMS = [
     name: "น้ำดื่มสะอาดแช่เย็น (Fresh Mineral Water)",
     price: 15,
     category: "Drinks",
-    image: "./assets/images/water.jpg?v=3",
+    image: "https://images.unsplash.com/photo-1523362628745-0c100150b504?auto=format&fit=crop&w=600&q=80",
     description: "น้ำแร่ธรรมชาติแช่เย็นชื่นใจ เสิร์ฟพร้อมน้ำแข็งสะอาด",
     available: true
   }
@@ -65,7 +65,7 @@ const DEFAULT_EMPLOYEES = [
 
 // Helper to initialize local storage
 function initDB() {
-  const DB_VERSION = "3";
+  const DB_VERSION = "4";
   if (localStorage.getItem("restaurant_db_version") !== DB_VERSION) {
     localStorage.removeItem("restaurant_menu");
     localStorage.setItem("restaurant_db_version", DB_VERSION);
