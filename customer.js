@@ -1,5 +1,5 @@
 // customer.js - Customer Front-end Component
-import { DB } from './db.js?v=2';
+import { DB } from './db.js?v=3';
 
 // Maps category name to emoji and gradient classes for fallback placeholders
 const CATEGORY_STYLES = {
