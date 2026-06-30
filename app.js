@@ -1,7 +1,7 @@
 // app.js - Main Application Shell & Router Coordinator
-import { DB } from './db.js';
-import { CustomerView } from './customer.js';
-import { AdminView } from './admin.js';
+import { DB } from './db.js?v=2';
+import { CustomerView } from './customer.js?v=2';
+import { AdminView } from './admin.js?v=2';
 
 // --- GLOBAL APPLICATION STATE ---
 const state = {

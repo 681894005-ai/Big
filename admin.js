@@ -1,5 +1,5 @@
 // admin.js - Employee Back-office & POS Dashboard
-import { DB } from './db.js';
+import { DB } from './db.js?v=2';
 
 export const AdminView = {
   render(containerId, globalState, actions) {
@@ -401,7 +401,7 @@ export const AdminView = {
           <h3 class="modal-title">จำลองบิลชำระเงิน</h3>
           <button class="modal-close-btn" id="btn-close-receipt">×</button>
         </div>
-        <div class="modal-body" style="background-color:#f1f5f9; padding: 1.5rem 1rem;">
+        <div class="modal-body" style="background-color:#0d1321; padding: 1.5rem 1rem;">
           ${receiptHtml}
         </div>
         <div class="modal-footer" style="justify-content:space-between;">
@@ -451,7 +451,7 @@ export const AdminView = {
                 </svg>
                 เพิ่มเมนูใหม่
                </button>`
-            : `<div style="font-size:0.85rem; color:var(--text-muted); padding:0.4rem 0.8rem; background-color:#f1f5f9; border-radius:4px; border:1px solid var(--border-color);">
+            : `<div style="font-size:0.85rem; color:var(--text-muted); padding:0.4rem 0.8rem; background-color:#1e293b; border-radius:4px; border:1px solid var(--border-color);">
                 🔒 เฉพาะสิทธิ์ผู้จัดการเท่านั้นที่สามารถ เพิ่ม/แก้ไข เมนูได้
                </div>`
           }
@@ -473,7 +473,7 @@ export const AdminView = {
                 <tr data-id="${item.id}">
                   <td>
                     <div class="table-dish">
-                      <img src="${item.image}" alt="${item.name}" class="table-dish-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22><rect width=%22100%%22 height=%22100%%22 fill=%22%23fef3c7%22/><text x=%2250%%22 y=%2260%%22 font-size=%2222%22 text-anchor=%22middle%22>🍛</text></svg>'">
+                      <img src="${item.image}" alt="${item.name}" class="table-dish-img" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22><rect width=%22100%%22 height=%22100%%22 fill=%22%231e293b%22/><text x=%2250%%22 y=%2260%%22 font-size=%2222%22 text-anchor=%22middle%22>🍛</text></svg>'">
                       <div class="table-dish-info">
                         <span class="table-dish-name">${item.name}</span>
                         <span class="table-dish-desc">${item.description || 'ไม่มีรายละเอียด'}</span>
@@ -608,7 +608,7 @@ export const AdminView = {
 
             <div class="input-group">
               <label for="edit-category">หมวดหมู่อาหาร</label>
-              <select id="edit-category" class="form-input" style="background-color: white;" required>
+              <select id="edit-category" class="form-input" style="background-color: #0f172a;" required>
                 ${categories.map(cat => `<option value="${cat}" ${isEdit && item.category === cat ? 'selected' : ''}>${cat}</option>`).join('')}
               </select>
             </div>

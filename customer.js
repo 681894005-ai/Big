@@ -1,11 +1,11 @@
 // customer.js - Customer Front-end Component
-import { DB } from './db.js';
+import { DB } from './db.js?v=2';
 
 // Maps category name to emoji and gradient classes for fallback placeholders
 const CATEGORY_STYLES = {
-  "Main": { emoji: "🍛", gradient: "linear-gradient(135deg, #ffedd5, #fed7aa)" },
-  "Dessert": { emoji: "🥭", gradient: "linear-gradient(135deg, #fdf4ff, #f3e8ff)" },
-  "Drinks": { emoji: "🍹", gradient: "linear-gradient(135deg, #ecfeff, #cffafe)" }
+  "Main": { emoji: "🍛", gradient: "linear-gradient(135deg, #1e1b18, #2a1f1a)" },
+  "Dessert": { emoji: "🥭", gradient: "linear-gradient(135deg, #1f1225, #2c1a35)" },
+  "Drinks": { emoji: "🍹", gradient: "linear-gradient(135deg, #0f2027, #172c33)" }
 };
 
 export const CustomerView = {
@@ -75,12 +75,12 @@ export const CustomerView = {
     }
 
     gridContainer.innerHTML = filteredItems.map(item => {
-      const catStyle = CATEGORY_STYLES[item.category] || { emoji: "🍽️", gradient: "linear-gradient(135deg, #f1f5f9, #e2e8f0)" };
+      const catStyle = CATEGORY_STYLES[item.category] || { emoji: "🍽️", gradient: "linear-gradient(135deg, #0f172a, #1e293b)" };
       const badgeClass = `badge-${item.category.toLowerCase()}`;
       const statusClass = item.available ? '' : 'unavailable';
       
       // Inline styling for the image container to render a beautiful fallback gradient + emoji
-      const fallbackStyle = `background: ${catStyle.gradient}; display: flex; align-items: center; justify-content: center; font-size: 4rem; color: #334155; position: relative;`;
+      const fallbackStyle = `background: ${catStyle.gradient}; display: flex; align-items: center; justify-content: center; font-size: 4rem; color: #64748b; position: relative;`;
 
       return `
         <div class="menu-card ${statusClass}" data-id="${item.id}">
@@ -108,7 +108,7 @@ export const CustomerView = {
                       <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg> สั่งซื้อ
                    </button>`
-                : `<button class="add-cart-btn" disabled style="background-color:#e2e8f0; color:#94a3b8; cursor:not-allowed;">หมด</button>`
+                : `<button class="add-cart-btn" disabled style="background-color:#1e293b; color:#475569; border-color:transparent; cursor:not-allowed;">หมด</button>`
               }
             </div>
           </div>
