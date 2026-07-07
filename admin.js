@@ -101,8 +101,13 @@ export const AdminView = {
         <!-- Tab Selection Toolbar -->
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:1rem;">
           <div class="admin-tabs" id="admin-view-tabs">
-            <button class="admin-tab-btn ${currentTab === 'orders' ? 'active' : ''}" data-tab="orders">กระดานคำสั่งซื้อ (Orders Board)</button>
-            <button class="admin-tab-btn ${currentTab === 'menu' ? 'active' : ''}" data-tab="menu">จัดการเมนูอาหาร (Manage Menu)</button>
+            <button class="admin-tab-btn ${currentTab === 'orders' ? 'active' : ''}" data-tab="orders">กระดานคำสั่งซื้อ (Orders)</button>
+            ${session.role === 'manager' ? `
+              <button class="admin-tab-btn ${currentTab === 'history' ? 'active' : ''}" data-tab="history">ประวัติออเดอร์ (History)</button>
+              <button class="admin-tab-btn ${currentTab === 'menu' ? 'active' : ''}" data-tab="menu">จัดการเมนู (Menu)</button>
+              <button class="admin-tab-btn ${currentTab === 'employees' ? 'active' : ''}" data-tab="employees">จัดการพนักงาน (Staff)</button>
+              <button class="admin-tab-btn ${currentTab === 'reports' ? 'active' : ''}" data-tab="reports">รายงานยอดขาย (Reports)</button>
+            ` : ''}
           </div>
         </div>
 
@@ -114,11 +119,23 @@ export const AdminView = {
     `;
 
     // Render current active tab content
-    if (currentTab === 'orders') {
-      this.renderOrdersBoard(actions);
-    } else {
-      this.renderMenuManagement(session, actions);
-    }
+    const renderTabContent = (tab) => {
+      if (tab === 'orders') {
+        this.renderOrdersBoard(actions);
+      } else if (tab === 'history' && session.role === 'manager') {
+        this.renderOrderHistory(actions);
+      } else if (tab === 'menu' && session.role === 'manager') {
+        this.renderMenuManagement(session, actions);
+      } else if (tab === 'employees' && session.role === 'manager') {
+        this.renderEmployeesManagement(actions);
+      } else if (tab === 'reports' && session.role === 'manager') {
+        this.renderReports(actions);
+      } else {
+        this.renderOrdersBoard(actions);
+      }
+    };
+
+    renderTabContent(currentTab);
 
     // Bind common header events
     document.getElementById("btn-employee-logout").addEventListener("click", () => {
@@ -137,12 +154,7 @@ export const AdminView = {
         
         const selectedTab = tabBtn.dataset.tab;
         globalState.adminTab = selectedTab;
-        
-        if (selectedTab === 'orders') {
-          this.renderOrdersBoard(actions);
-        } else {
-          this.renderMenuManagement(session, actions);
-        }
+        renderTabContent(selectedTab);
       });
     }
   },
@@ -678,6 +690,306 @@ export const AdminView = {
       // Refresh current menu view tab
       const session = DB.getCurrentSession();
       this.renderMenuManagement(session, actions);
+    });
+  },
+
+  renderReports(actions) {
+    const contentDiv = document.getElementById("admin-tab-content");
+    if (!contentDiv) return;
+
+    const orders = DB.getOrders();
+    const completedOrders = orders.filter(o => o.status === 'completed');
+    
+    // Calculations
+    const totalSales = completedOrders.reduce((sum, o) => sum + o.total, 0);
+    const totalOrdersCount = orders.length;
+    const avgOrderValue = totalOrdersCount > 0 ? (totalSales / completedOrders.length || 0) : 0;
+    
+    // Count popular items
+    const itemCounts = {};
+    completedOrders.forEach(o => {
+      o.items.forEach(item => {
+        if (!itemCounts[item.name]) {
+          itemCounts[item.name] = { count: 0, revenue: 0 };
+        }
+        itemCounts[item.name].count += item.quantity;
+        itemCounts[item.name].revenue += (item.price * item.quantity);
+      });
+    });
+    
+    const popularItems = Object.keys(itemCounts).map(name => ({
+      name,
+      count: itemCounts[name].count,
+      revenue: itemCounts[name].revenue
+    })).sort((a, b) => b.count - a.count).slice(0, 5);
+
+    contentDiv.innerHTML = `
+      <div class="reports-container" style="display:flex; flex-direction:column; gap:1.5rem; color:var(--text-light);">
+        <!-- Summary Stats Cards -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1rem;">
+          <div style="background:var(--bg-light); border:1px solid var(--border-color); padding:1.25rem; border-radius:8px;">
+            <div style="font-size:0.85rem; color:var(--text-muted); font-weight:600; margin-bottom:0.5rem;">ยอดขายรวม (Total Revenue)</div>
+            <div style="font-size:1.75rem; font-weight:800; color:var(--primary-color);">${totalSales.toLocaleString()} ฿</div>
+          </div>
+          <div style="background:var(--bg-light); border:1px solid var(--border-color); padding:1.25rem; border-radius:8px;">
+            <div style="font-size:0.85rem; color:var(--text-muted); font-weight:600; margin-bottom:0.5rem;">ออเดอร์ทั้งหมด (Total Orders)</div>
+            <div style="font-size:1.75rem; font-weight:800;">${totalOrdersCount} บิล</div>
+          </div>
+          <div style="background:var(--bg-light); border:1px solid var(--border-color); padding:1.25rem; border-radius:8px;">
+            <div style="font-size:0.85rem; color:var(--text-muted); font-weight:600; margin-bottom:0.5rem;">เฉลี่ยต่อบิล (Avg. Bill Value)</div>
+            <div style="font-size:1.75rem; font-weight:800; color:var(--accent-color);">${avgOrderValue.toFixed(2)} ฿</div>
+          </div>
+        </div>
+
+        <!-- Popular Menu Items -->
+        <div style="background:var(--bg-light); border:1px solid var(--border-color); padding:1.5rem; border-radius:8px;">
+          <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:1rem; border-bottom:1px solid var(--border-color); padding-bottom:0.5rem;">🔥 เมนูขายดีที่สุด (Best Selling Items)</h3>
+          ${popularItems.length === 0 
+            ? '<p style="color:var(--text-muted); text-align:center; padding:1.5rem;">ยังไม่มีสถิติยอดสั่งซื้อในออเดอร์ที่เสร็จสมบูรณ์</p>'
+            : `<div style="display:flex; flex-direction:column; gap:1rem;">
+                ${popularItems.map((item, index) => `
+                  <div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:0.25rem; font-size:0.9rem;">
+                      <strong>${index+1}. ${item.name}</strong>
+                      <span>${item.count} ชิ้น (ยอดขาย ${item.revenue.toLocaleString()} ฿)</span>
+                    </div>
+                    <div style="background:var(--border-color); height:8px; border-radius:4px; overflow:hidden;">
+                      <div style="background:var(--primary-color); width:${(item.count / popularItems[0].count) * 100}%; height:100%;"></div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>`
+          }
+        </div>
+      </div>
+    `;
+  },
+
+  renderEmployeesManagement(actions) {
+    const contentDiv = document.getElementById("admin-tab-content");
+    if (!contentDiv) return;
+
+    const employees = DB.getEmployees();
+
+    contentDiv.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:1rem; color:var(--text-light);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="font-size:1.1rem; font-weight:700;">👤 รายชื่อบัญชีพนักงานในระบบ</h3>
+          <button class="add-menu-btn" id="btn-add-employee" style="padding:0.4rem 0.8rem; font-size:0.85rem;">
+            + เพิ่มบัญชีพนักงาน
+          </button>
+        </div>
+
+        <div style="overflow-x:auto; background:var(--bg-light); border:1px solid var(--border-color); border-radius:8px;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.9rem; text-align:left;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border-color); background:rgba(255,255,255,0.02);">
+                <th style="padding:0.75rem 1rem;">ชื่อพนักงาน (Name)</th>
+                <th style="padding:0.75rem 1rem;">ชื่อผู้ใช้ (Username)</th>
+                <th style="padding:0.75rem 1rem;">รหัสผ่าน (Password)</th>
+                <th style="padding:0.75rem 1rem;">สิทธิ์ (Role)</th>
+                <th style="padding:0.75rem 1rem; text-align:center;">การกระทำ (Actions)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${employees.map(emp => `
+                <tr style="border-bottom:1px solid var(--border-color);">
+                  <td style="padding:0.75rem 1rem; font-weight:600;">${emp.name}</td>
+                  <td style="padding:0.75rem 1rem;"><code>${emp.username}</code></td>
+                  <td style="padding:0.75rem 1rem; color:var(--text-muted); font-size:0.8rem;">${emp.username}123</td>
+                  <td style="padding:0.75rem 1rem;">
+                    <span style="font-size:0.75rem; padding:0.15rem 0.4rem; border-radius:4px; font-weight:700; ${
+                      emp.role === 'manager' 
+                        ? 'background:rgba(239,68,68,0.1); color:#ef4444;' 
+                        : 'background:rgba(16,185,129,0.1); color:#10b981;'
+                    }">
+                      ${emp.role === 'manager' ? 'ผู้จัดการ' : 'พนักงานครัว'}
+                    </span>
+                  </td>
+                  <td style="padding:0.75rem 1rem; text-align:center;">
+                    <button class="delete-menu-item-btn" data-username="${emp.username}" style="padding:0.25rem 0.5rem; font-size:0.75rem; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); color:#ef4444; border-radius:4px; cursor:pointer;">
+                      ลบ
+                    </button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    // Bind add button
+    document.getElementById("btn-add-employee").addEventListener("click", () => {
+      this.showEmployeeModal(null, actions);
+    });
+
+    // Bind delete buttons
+    contentDiv.querySelectorAll(".delete-menu-item-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const username = e.target.dataset.username;
+        if (confirm(`คุณต้องการลบพนักงาน "${username}" ใช่หรือไม่?`)) {
+          const res = DB.deleteEmployee(username);
+          if (res.success) {
+            actions.showToast("ลบบัญชีพนักงานเรียบร้อย", "success");
+            this.renderEmployeesManagement(actions);
+          } else {
+            actions.showToast(res.message, "danger");
+          }
+        }
+      });
+    });
+  },
+
+  showEmployeeModal(employee, actions) {
+    const modalDiv = document.createElement("div");
+    modalDiv.className = "modal-overlay";
+    modalDiv.id = "employee-modal";
+    modalDiv.innerHTML = `
+      <div class="modal-content" style="max-width: 400px; color:var(--text-light);">
+        <div class="modal-header">
+          <h2>+ เพิ่มบัญชีพนักงานใหม่</h2>
+          <button id="btn-close-emp-modal" class="modal-close">&times;</button>
+        </div>
+        <form id="emp-edit-form" style="padding:1rem 0; display:flex; flex-direction:column; gap:1rem;">
+          <div class="input-group">
+            <label style="font-size:0.85rem; margin-bottom:0.25rem; font-weight:600;">ชื่อพนักงาน</label>
+            <input type="text" id="emp-name" class="form-input" placeholder="เช่น คุณสมศรี..." required>
+          </div>
+          <div class="input-group">
+            <label style="font-size:0.85rem; margin-bottom:0.25rem; font-weight:600;">ชื่อผู้ใช้งาน (Username)</label>
+            <input type="text" id="emp-username" class="form-input" placeholder="เช่น somsri..." required>
+            <span style="font-size:0.7rem; color:var(--text-muted); margin-top:0.25rem;">รหัสผ่านเริ่มต้นของระบบจะเป็น: ชื่อผู้ใช้งาน + "123"</span>
+          </div>
+          <div class="input-group">
+            <label style="font-size:0.85rem; margin-bottom:0.25rem; font-weight:600;">สิทธิ์ตำแหน่งพนักงาน</label>
+            <select id="emp-role" class="form-input" style="background:var(--bg-dark); color:var(--text-light); border:1px solid var(--border-color);">
+              <option value="staff">พนักงานครัว (Kitchen Staff)</option>
+              <option value="manager">ผู้จัดการ (Manager)</option>
+            </select>
+          </div>
+          <div class="modal-footer" style="margin-top:1rem; display:flex; gap:0.5rem; justify-content:flex-end;">
+            <button type="button" id="btn-cancel-emp-modal" class="btn-secondary" style="padding:0.4rem 0.8rem; font-size:0.85rem;">ยกเลิก</button>
+            <button type="submit" class="btn-primary" style="padding:0.4rem 0.8rem; font-size:0.85rem;">บันทึกข้อมูล</button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    document.body.appendChild(modalDiv);
+
+    const closeModal = () => modalDiv.remove();
+    document.getElementById("btn-close-emp-modal").addEventListener("click", closeModal);
+    document.getElementById("btn-cancel-emp-modal").addEventListener("click", closeModal);
+
+    modalDiv.querySelector("#emp-edit-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("emp-name").value.trim();
+      const username = document.getElementById("emp-username").value.trim().toLowerCase();
+      const role = document.getElementById("emp-role").value;
+
+      const res = DB.addEmployee({ name, username, role });
+      if (res.success) {
+        actions.showToast(`เพิ่มพนักงานคุณ ${name} เข้าสู่ระบบสำเร็จแล้ว`, "success");
+        closeModal();
+        this.renderEmployeesManagement(actions);
+      } else {
+        actions.showToast(res.message, "danger");
+      }
+    });
+  },
+
+  renderOrderHistory(actions) {
+    const contentDiv = document.getElementById("admin-tab-content");
+    if (!contentDiv) return;
+
+    const orders = DB.getOrders();
+
+    const renderList = (filteredOrders) => {
+      let tbodyHtml = '';
+      if (filteredOrders.length === 0) {
+        tbodyHtml = `
+          <tr>
+            <td colspan="5" style="padding:2rem; text-align:center; color:var(--text-muted);">ไม่พบข้อมูลออเดอร์ย้อนหลัง</td>
+          </tr>
+        `;
+      } else {
+        tbodyHtml = filteredOrders.map(order => {
+          let statusText = 'รอดำเนินการ';
+          let statusStyle = 'background:rgba(249,115,22,0.1); color:#f97316;';
+          if (order.status === 'cooking') {
+            statusText = 'กำลังปรุง';
+            statusStyle = 'background:rgba(59,130,246,0.1); color:#3b82f6;';
+          } else if (order.status === 'ready') {
+            statusText = 'พร้อมเสิร์ฟ';
+            statusStyle = 'background:rgba(16,185,129,0.1); color:#10b981;';
+          } else if (order.status === 'completed') {
+            statusText = 'เสร็จสมบูรณ์';
+            statusStyle = 'background:rgba(100,116,139,0.1); color:#64748b;';
+          }
+
+          const itemsText = order.items.map(i => `${i.name} (${i.quantity}x)`).join(', ');
+
+          return `
+            <tr style="border-bottom:1px solid var(--border-color);">
+              <td style="padding:0.75rem 1rem; font-weight:600; font-family:monospace;">${order.id}</td>
+              <td style="padding:0.75rem 1rem;">${order.customerName}</td>
+              <td style="padding:0.75rem 1rem; max-width:250px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${itemsText}">${itemsText}</td>
+              <td style="padding:0.75rem 1rem; font-weight:600; color:var(--primary-color);">${order.total} ฿</td>
+              <td style="padding:0.75rem 1rem;">
+                <span style="font-size:0.75rem; padding:0.15rem 0.4rem; border-radius:4px; font-weight:700; ${statusStyle}">
+                  ${statusText}
+                </span>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      document.getElementById("history-table-body").innerHTML = tbodyHtml;
+    };
+
+    contentDiv.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:1rem; color:var(--text-light);">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
+          <h3 style="font-size:1.1rem; font-weight:700;">📋 ประวัติออเดอร์ในร้านทั้งหมด</h3>
+          <input type="text" id="history-search" class="form-input" placeholder="🔍 ค้นหาด้วยเลขออเดอร์ หรือ ชื่อลูกค้า..." style="max-width:300px; font-size:0.85rem; padding:0.4rem 0.8rem;">
+        </div>
+
+        <div style="overflow-x:auto; background:var(--bg-light); border:1px solid var(--border-color); border-radius:8px;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.9rem; text-align:left;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border-color); background:rgba(255,255,255,0.02);">
+                <th style="padding:0.75rem 1rem;">รหัสออเดอร์</th>
+                <th style="padding:0.75rem 1rem;">ลูกค้า/โต๊ะ</th>
+                <th style="padding:0.75rem 1rem;">รายการอาหาร</th>
+                <th style="padding:0.75rem 1rem;">ยอดรวม</th>
+                <th style="padding:0.75rem 1rem;">สถานะ</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body">
+              <!-- Dynamically rendered rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    // Render initial list
+    renderList(orders);
+
+    // Bind search event
+    document.getElementById("history-search").addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) {
+        renderList(orders);
+      } else {
+        const filtered = orders.filter(o => 
+          o.id.toLowerCase().includes(q) || 
+          o.customerName.toLowerCase().includes(q)
+        );
+        renderList(filtered);
+      }
     });
   }
 };

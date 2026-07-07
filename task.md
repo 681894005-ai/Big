@@ -1,0 +1,4 @@
+﻿- [ ] Generate and copy remaining food images (`tom_yum.jpg`, `green_curry.jpg`, `mango_sticky_rice.jpg`, `thai_tea.jpg`, `water.jpg`)
+- [ ] Implement premium Dark Mode styling in `style.css`
+- [ ] Update HTML and component files for dark mode compatibility
+- [ ] Verify implementation and document in walkthrough
